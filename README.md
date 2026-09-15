@@ -1,6 +1,6 @@
-# EasyPaste
+# ClearPaste
 
-<img src="Assets/EasyPaste.png" alt="EasyPaste icon" width="160">
+<img src="Assets/ClearPaste.png" alt="ClearPaste icon" width="160">
 
 **Plain text, on command.** A small native macOS menu bar utility.
 
@@ -10,20 +10,20 @@
 | **⌘V** | Paste normally. |
 | **⌥⌘V** | Paste the copied text without formatting. |
 
-EasyPaste never automatically strips copied text. It temporarily supplies plain text for Option-Command-V, sends a normal paste keystroke to the frontmost app, then restores the original clipboard if you haven't copied something else.
+ClearPaste never automatically strips copied text. It temporarily supplies plain text for Option-Command-V, sends a normal paste keystroke to the frontmost app, then restores the original clipboard if you haven't copied something else.
 
 ## Build and run
 
-Requires macOS 13 or later and Apple's Swift command line tools or Xcode. No third-party packages.
+Requires macOS 26 or later (including macOS 27) and an SDK supporting Liquid Glass, such as Xcode 26 or newer. The current local build uses the macOS 27 SDK. No third-party packages.
 
 ```sh
 ./scripts/build-app.sh
-open dist/EasyPaste.app
+open dist/ClearPaste.app
 ```
 
-Look for the clipboard icon in the menu bar. Open **Settings → Enable Accessibility…**, then allow EasyPaste in **System Settings → Privacy & Security → Accessibility**. This permission lets EasyPaste send the paste keystroke. Copy and normal paste work without that permission; the plain-text shortcut needs it.
+Look for the clipboard icon in the menu bar. Open **Settings → Enable Accessibility…**, then allow ClearPaste in **System Settings → Privacy & Security → Accessibility**. This permission lets ClearPaste send the paste keystroke. Copy and normal paste work without that permission; the plain-text shortcut needs it.
 
-For regular use, copy `dist/EasyPaste.app` to Applications before granting permission and enabling **Launch at login**. Rebuilding an ad hoc signed app can require reauthorizing Accessibility. Builds are locally signed, not notarized for public distribution.
+For regular use, copy `dist/ClearPaste.app` to Applications before granting permission and enabling **Launch at login**. Rebuilding an ad hoc signed app can require reauthorizing Accessibility. Builds are locally signed, not notarized for public distribution.
 
 ## Features
 
@@ -68,6 +68,14 @@ The 16 checks cover text and URL transformations, keeping copied rich text intac
 
 The automated suite does not prove paste delivery into every macOS app. After granting Accessibility, copy bold text in a rich-text editor: check that ⌘V retains bold, ⌥⌘V uses plain text, and a subsequent ⌘V (after one second) retains bold again.
 
-## Icon
+## Liquid Glass and Icon Composer
 
-The app bundle includes a multi-resolution macOS icon built from [Assets/EasyPaste.png](Assets/EasyPaste.png). The [asset notes](Assets/README.md) record the built-in image-generation tool and original prompt. `scripts/build-icon.sh` produces the ICNS file during every build.
+ClearPaste uses native SwiftUI `GlassEffectContainer`, `glassEffect`, glass buttons, and a system `NavigationSplitView` sidebar. These controls adopt the operating system's current design and accessibility appearance settings; no simulated glass artwork is used for the interface.
+
+The icon is a layered **Icon Composer** document at [Assets/ClearPaste.icon](Assets/ClearPaste.icon), with separate clipboard, clip, text, and sparkle SVG layers. Apple Icon Composer 27's `ictool` renders the checked-in default and dark previews. Open the `.icon` document in Icon Composer to adjust glass, translucency, lighting, or individual layers. Run `./scripts/render-icon.sh` after editing.
+
+With full Xcode installed, `scripts/build-app.sh` uses `actool` to compile the layered document into `Assets.car`, including native adaptive icon appearances. The GitHub build does this and uploads a `ClearPaste-macOS` app artifact. With command-line tools alone, the script packages a static ICNS rendered by Icon Composer. The editable source remains identical; the static fallback does not provide adaptive icon materials.
+
+### Renaming from EasyPaste
+
+The product, source module, project folder, and public repository are named ClearPaste. The bundle identifier remains `local.easypaste.app` to retain the existing preferences and app identity. Quit the older app before launching ClearPaste to avoid two processes competing for the shortcut. Rebuilt ad hoc signatures may require reauthorizing Accessibility; enable Launch at Login again after moving the app to Applications if necessary.

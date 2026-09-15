@@ -4,7 +4,7 @@ import XCTest
 import AppKit
 import PasteCore
 #if !STANDALONE_TESTS
-@testable import EasyPaste
+@testable import ClearPaste
 #endif
 
 final class TextCleanerTests: XCTestCase {

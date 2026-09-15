@@ -1,12 +1,12 @@
 // swift-tools-version: 5.9
 import PackageDescription
 let package = Package(
-    name: "EasyPaste",
-    platforms: [.macOS(.v13)],
-    products: [.executable(name: "EasyPaste", targets: ["EasyPaste"])],
+    name: "ClearPaste",
+    platforms: [.macOS("26.0")],
+    products: [.executable(name: "ClearPaste", targets: ["ClearPaste"])],
     targets: [
         .target(name: "PasteCore"),
-        .executableTarget(name: "EasyPaste", dependencies: ["PasteCore"]),
-        .testTarget(name: "PasteCoreTests", dependencies: ["PasteCore", "EasyPaste"])
+        .executableTarget(name: "ClearPaste", dependencies: ["PasteCore"]),
+        .testTarget(name: "PasteCoreTests", dependencies: ["PasteCore", "ClearPaste"])
     ]
 )

@@ -199,7 +199,7 @@ final class ClipboardController: ObservableObject {
         do {
             if enabled { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
             loginEnabled = SMAppService.mainApp.status == .enabled
-            loginError = SMAppService.mainApp.status == .requiresApproval ? "Allow EasyPaste in System Settings → General → Login Items." : nil
+            loginError = SMAppService.mainApp.status == .requiresApproval ? "Allow ClearPaste in System Settings → General → Login Items." : nil
         } catch { loginError = error.localizedDescription; loginEnabled = SMAppService.mainApp.status == .enabled }
     }
 }

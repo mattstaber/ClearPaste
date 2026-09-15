@@ -1,8 +1,11 @@
-# EasyPaste icon
+# ClearPaste icon
 
-Source: `EasyPaste.png` (1254 × 1254, RGBA with transparency).
-Created with the built-in image_gen tool. `scripts/build-icon.sh` converts this asset into the standard macOS icon sizes and packages an ICNS file. The menu bar retains a monochrome system symbol for legibility; the app bundle, menu panel, and About view use the custom icon.
+- **Editable source:** `ClearPaste.icon`, a native Icon Composer document.
+- **Renderer:** Apple Icon Composer 27.0 (`ictool`, design generation 27).
+- **Layers:** Clipboard body, clip, text lines, and sparkle, each an original SVG.
+- **Material:** Blue/teal background gradient with separately lit glass foreground groups.
+- **Previews:** `ClearPaste.png` and `ClearPaste-dark.png`, rendered by Icon Composer.
 
-## Original prompt
+Run `scripts/render-icon.sh` to regenerate the previews, or open the `.icon` document in Icon Composer. The document structure follows Apple's [Landmarks sample](https://developer.apple.com/documentation/swiftui/landmarks-building-an-app-with-liquid-glass); no sample artwork is used.
 
-Create a polished macOS app icon for EasyPaste, a utility that pastes clean plain text. Square 1024x1024. One centered rounded-square blue-to-teal gently luminous tile with a sculpted white clipboard/document symbol and three crisp short text lines, subtle small clean sparkle in the upper right of the document. Elegant restrained three-dimensional native Mac utility aesthetic, soft material depth, bold simple silhouette readable at small sizes. Front-facing, no perspective, no text or letters, no wordmark, no extra objects, no surrounding mockup. The rounded tile occupies about 88% of image width with consistent margin. Genuine transparent background outside the rounded-square tile; no checkerboard painted into image. Deliver one final icon.
+`build-app.sh` compiles the source with Xcode's asset compiler when available. Command-line-tools-only builds package the rendered ICNS fallback. The prior AI-generated icon has been replaced completely.

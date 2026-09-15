@@ -6,10 +6,16 @@ permissions:
   contents: read
 jobs:
   macos:
-    runs-on: macos-14
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
       - name: Run isolated clipboard and text tests
         run: ./scripts/test.sh
       - name: Build app
         run: ./scripts/build-app.sh
+      - name: Package app
+        run: ditto -c -k --sequesterRsrc --keepParent dist/ClearPaste.app dist/ClearPaste.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ClearPaste-macOS
+          path: dist/ClearPaste.zip

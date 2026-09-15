@@ -1,0 +1,101 @@
+{
+  "fill": {
+    "linear-gradient": [
+      "srgb:0.00000,0.74000,0.80000,1.00000",
+      "srgb:0.03500,0.31000,0.90000,1.00000"
+    ]
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "image-name": "sparkle.svg",
+          "name": "Sparkle",
+          "glass": true,
+          "fill": "automatic"
+        }
+      ],
+      "lighting": "individual",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.35
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.1
+      }
+    },
+    {
+      "layers": [
+        {
+          "image-name": "text.svg",
+          "name": "Text",
+          "glass": false,
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "srgb:0.03000,0.38000,0.68000,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "srgb:1.00000,1.00000,1.00000,1.00000"
+              }
+            }
+          ]
+        }
+      ],
+      "lighting": "individual",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.35
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0
+      }
+    },
+    {
+      "layers": [
+        {
+          "image-name": "clip.svg",
+          "name": "Clip",
+          "glass": true,
+          "fill": "automatic"
+        }
+      ],
+      "lighting": "individual",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.35
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.12
+      }
+    },
+    {
+      "layers": [
+        {
+          "image-name": "clipboard.svg",
+          "name": "Clipboard",
+          "glass": true,
+          "fill": "automatic"
+        }
+      ],
+      "lighting": "individual",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.35
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.2
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": "shared"
+  }
+}
