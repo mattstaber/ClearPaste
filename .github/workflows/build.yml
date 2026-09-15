@@ -1,0 +1,15 @@
+name: Build and test
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run isolated clipboard and text tests
+        run: ./scripts/test.sh
+      - name: Build app
+        run: ./scripts/build-app.sh
