@@ -4,7 +4,7 @@
 - **Renderer:** Apple Icon Composer 27.0 (`ictool`, design generation 27).
 - **Layers:** Clipboard body, clip, text lines, and sparkle, each an original SVG.
 - **Material:** Blue/teal background gradient with separately lit glass foreground groups.
-- **Previews:** `ClearPaste.png` and `ClearPaste-dark.png`, rendered by Icon Composer.
+- **Previews:** `ClearPaste-{Default,Dark,ClearLight,ClearDark,TintedLight,TintedDark}.png`, rendered by Icon Composer.
 
 Run `scripts/render-icon.sh` to regenerate the previews, or open the `.icon` document in Icon Composer. The document structure follows Apple's [Landmarks sample](https://developer.apple.com/documentation/swiftui/landmarks-building-an-app-with-liquid-glass); no sample artwork is used.
 

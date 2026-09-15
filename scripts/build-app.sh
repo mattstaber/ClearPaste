@@ -6,6 +6,7 @@ swift build -c release --disable-sandbox
 BIN_DIR=$(swift build -c release --show-bin-path)
 APP="$PWD/dist/ClearPaste.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+rm -f "$APP/Contents/Resources/Assets.car"
 ./scripts/build-icon.sh
 cp .build/ClearPaste.icns "$APP/Contents/Resources/ClearPaste.icns"
 cp "$BIN_DIR/ClearPaste" "$APP/Contents/MacOS/ClearPaste"
@@ -20,7 +21,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 <key>CFBundleIconFile</key><string>ClearPaste</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleShortVersionString</key><string>2.0.0</string>
-<key>CFBundleVersion</key><string>4</string>
+<key>CFBundleVersion</key><string>5</string>
 <key>LSMinimumSystemVersion</key><string>26.0</string>
 <key>LSUIElement</key><true/>
 <key>NSHighResolutionCapable</key><true/>

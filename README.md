@@ -1,6 +1,6 @@
 # ClearPaste
 
-<img src="Assets/ClearPaste.png" alt="ClearPaste icon" width="160">
+<img src="Assets/ClearPaste-Default.png" alt="ClearPaste icon" width="160">
 
 **Plain text, on command.** A small native macOS menu bar utility.
 
