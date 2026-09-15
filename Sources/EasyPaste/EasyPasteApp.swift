@@ -10,8 +10,8 @@ struct EasyPasteApp: App {
         MenuBarExtra {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 12) {
-                    Image(systemName: "doc.on.clipboard.fill")
-                        .font(.system(size: 25)).foregroundStyle(.tint)
+                    Image(nsImage: NSApplication.shared.applicationIconImage)
+                        .resizable().frame(width: 40, height: 40)
                     VStack(alignment: .leading, spacing: 3) {
                         Text("EasyPaste").font(.title3.bold())
                         Text("Plain text, on command.").font(.caption).foregroundStyle(.secondary)
@@ -44,7 +44,7 @@ final class SettingsWindow: ObservableObject {
     private var window: NSWindow?
     func show(_ controller: ClipboardController) {
         if window == nil {
-            let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 560, height: 590), styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: false)
+            let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 560, height: 700), styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: false)
             window.title = "EasyPaste Settings"
             window.isReleasedWhenClosed = false
             window.contentView = NSHostingView(rootView: SettingsView(controller: controller))
@@ -58,6 +58,7 @@ final class SettingsWindow: ObservableObject {
 
 struct SettingsView: View {
     @ObservedObject var controller: ClipboardController
+    @AppStorage("typeToPreserveStyle") private var typeToPreserveStyle = false
     @AppStorage("removeTracking") private var removeTracking = true
     @AppStorage("removeInvisible") private var removeInvisible = false
     @AppStorage("normalizeQuotes") private var normalizeQuotes = false
@@ -74,6 +75,10 @@ struct SettingsView: View {
                     Text("Allow EasyPaste in System Settings → Privacy & Security → Accessibility so it can send the paste keystroke.").font(.caption).foregroundStyle(.secondary)
                     if let error = controller.shortcutError { Text(error).foregroundStyle(.orange) }
                 } header: { Text("Paste shortcut · ⌥⌘V") }
+                Section("Preserve the current text style") {
+                    Toggle("Type short text instead of pasting", isOn: $typeToPreserveStyle)
+                    Text("Try this when replacing a whole heading in Word Online. Sends text as typing so the editor can keep its current style. For short, single-line text; longer text, tabs, and newlines use standard paste. Results depend on the editor.").font(.caption).foregroundStyle(.secondary)
+                }
                 Section("Text cleanup") {
                     Toggle("Remove common URL tracking parameters", isOn: $removeTracking)
                     Toggle("Remove invisible spaces and soft hyphens", isOn: $removeInvisible)
@@ -91,12 +96,12 @@ struct SettingsView: View {
                 }
             }.formStyle(.grouped).tabItem { Label("General", systemImage: "slider.horizontal.3") }
             VStack(spacing: 18) {
-                Image(systemName: "doc.on.clipboard.fill").font(.system(size: 60)).foregroundStyle(.tint)
+                Image(nsImage: NSApplication.shared.applicationIconImage).resizable().frame(width: 96, height: 96)
                 Text("EasyPaste").font(.largeTitle.bold())
                 Text("Plain text, on command.").font(.title3).foregroundStyle(.secondary)
-                Text("Version 1.1.0").font(.caption)
+                Text("Version 1.2.0").font(.caption)
                 Text("An independent macOS utility inspired by Pure Paste.\nBuilt with Swift and native macOS controls.").multilineTextAlignment(.center).foregroundStyle(.secondary)
             }.frame(maxWidth: .infinity, maxHeight: .infinity).tabItem { Label("About", systemImage: "info.circle") }
-        }.padding(12).frame(width: 560, height: 590)
+        }.padding(12).frame(width: 560, height: 700)
     }
 }

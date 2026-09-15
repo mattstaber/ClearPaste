@@ -12,6 +12,7 @@ final class ClipboardController: ObservableObject {
     private let pasteboard: NSPasteboard
     private var lastChange: Int
     private var timer: Timer?
+    private var restoreTask: Task<Void, Never>?
     private var hotKey: PasteHotKey?
     @Published var shortcutError: String?
     @Published var isPasting = false
@@ -27,7 +28,8 @@ final class ClipboardController: ObservableObject {
             shortcutError = hotKey?.error
 
             timer = Timer.scheduledTimer(withTimeInterval: 0.35, repeats: true) { [weak self] _ in
-                Task { @MainActor in self?.poll() }
+                guard let self else { return }
+                Task { @MainActor in self.poll() }
             }
         }
     }
@@ -67,16 +69,13 @@ final class ClipboardController: ObservableObject {
         isPasting = true
         Task { @MainActor in
             defer { isPasting = false }
-            // Wait for physical modifiers to lift so Option cannot leak into the paste.
-            for _ in 0..<200 {
-                let flags = CGEventSource.flagsState(.combinedSessionState)
-                if flags.intersection([.maskCommand, .maskAlternate, .maskControl, .maskShift]).isEmpty { break }
-                try? await Task.sleep(nanoseconds: 10_000_000)
+            guard NSWorkspace.shared.frontmostApplication?.processIdentifier == target.processIdentifier else {
+                status = "Paste cancelled because focus changed"
+                return
             }
-            let flags = CGEventSource.flagsState(.combinedSessionState)
-            guard flags.intersection([.maskCommand, .maskAlternate, .maskControl, .maskShift]).isEmpty,
-                  NSWorkspace.shared.frontmostApplication?.processIdentifier == target.processIdentifier else {
-                status = "Paste cancelled because focus or held keys changed"
+            if UserDefaults.standard.bool(forKey: "typeToPreserveStyle"),
+               let text = cleanedText(), let chunks = TypingPlan.chunks(for: text) {
+                await typeText(chunks, into: target.processIdentifier)
                 return
             }
             guard let source = CGEventSource(stateID: .privateState),
@@ -90,11 +89,61 @@ final class ClipboardController: ObservableObject {
             up.flags = .maskCommand
             down.postToPid(target.processIdentifier)
             up.postToPid(target.processIdentifier)
-            // macOS has no paste-completion callback. Allow the receiving app to read
-            // the temporary text, then restore only if no newer copy has arrived.
-            try? await Task.sleep(nanoseconds: 800_000_000)
+            status = "Plain-text paste sent"
+            scheduleRestore()
+        }
+    }
+
+    private func scheduleRestore() {
+        restoreTask?.cancel()
+        restoreTask = Task { @MainActor in
+            // This wait is AFTER delivery and does not block the next shortcut.
+            // Reset the window on repeated pastes so the recipient can finish reading.
+            do { try await Task.sleep(nanoseconds: 800_000_000) } catch { return }
             if canUndo { undo() }
-            status = "Plain-text paste sent · original clipboard kept"
+        }
+    }
+
+    private func typeText(_ chunks: [[UInt16]], into pid: pid_t) async {
+        guard let source = CGEventSource(stateID: .privateState) else { return }
+        // Prepare all events before editing, so event creation cannot leave half a heading.
+        var events: [(CGEvent, CGEvent)] = []
+        for chunk in chunks {
+            guard let down = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: true),
+                  let up = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: false) else {
+                status = "Could not create text input events"; return
+            }
+            down.flags = []
+            up.flags = []
+            chunk.withUnsafeBufferPointer { buffer in
+                down.keyboardSetUnicodeString(stringLength: buffer.count, unicodeString: buffer.baseAddress!)
+                up.keyboardSetUnicodeString(stringLength: buffer.count, unicodeString: buffer.baseAddress!)
+            }
+            events.append((down, up))
+        }
+        for (down, up) in events {
+            guard NSWorkspace.shared.frontmostApplication?.processIdentifier == pid else {
+                status = "Typing stopped because focus changed"; return
+            }
+            down.postToPid(pid)
+            up.postToPid(pid)
+            // Small batches prevent long strings overwhelming the receiving editor.
+            try? await Task.sleep(nanoseconds: 2_000_000)
+        }
+        status = "Text input sent · clipboard unchanged"
+    }
+
+    /// Shared eligibility rules for clipboard paste and the optional typing mode.
+    func cleanedText() -> String? {
+        guard let items = pasteboard.pasteboardItems, items.count == 1, let item = items.first,
+              !isProtected(item), let text = item.string(forType: .string) else { return nil }
+        return TextCleaner.clean(text, options: options)
+    }
+
+    private func isProtected(_ item: NSPasteboardItem) -> Bool {
+        item.types.contains { type in
+            let lower = type.rawValue.lowercased()
+            return lower.contains("concealed") || lower.contains("transient") || lower.contains("password") || lower.contains("1password") || lower.contains("promised") || lower.contains("file-url") || lower.contains("filenames") || lower.contains("image") || lower.contains("png") || lower.contains("tiff") || lower.contains("jpeg") || lower.contains("pdf")
         }
     }
 
@@ -104,12 +153,7 @@ final class ClipboardController: ObservableObject {
         guard let items = pasteboard.pasteboardItems, items.count == 1, let item = items.first else {
             status = "Skipped non-text or multiple items"; return false
         }
-        let types = item.types.map(\.rawValue)
-        let protected = types.contains { type in
-            let lower = type.lowercased()
-            return lower.contains("concealed") || lower.contains("transient") || lower.contains("password") || lower.contains("1password") || lower.contains("promised") || lower.contains("file-url") || lower.contains("filenames") || lower.contains("image") || lower.contains("png") || lower.contains("tiff") || lower.contains("jpeg") || lower.contains("pdf")
-        }
-        guard !protected else { status = "Kept protected or non-text content"; return false }
+        guard !isProtected(item) else { status = "Kept protected or non-text content"; return false }
         guard let text = item.string(forType: .string) else { status = "No plain-text representation to clean"; return false }
         let cleaned = TextCleaner.clean(text, options: options)
         let rich = item.types.contains(.rtf) || item.types.contains(.html) || item.types.contains(.rtfd)

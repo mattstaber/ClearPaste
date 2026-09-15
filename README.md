@@ -1,5 +1,7 @@
 # EasyPaste
 
+<img src="Assets/EasyPaste.png" alt="EasyPaste icon" width="160">
+
 **Plain text, on command.** A small native macOS menu bar utility.
 
 | Shortcut | Behavior |
@@ -32,10 +34,20 @@ For regular use, copy `dist/EasyPaste.app` to Applications before granting permi
 - Launch at login and native light/dark settings.
 - No automatic copy transformation, clipboard history, analytics, or network requests.
 
+## Faster paste and heading replacements
+
+The shortcut now fires when V is **pressed**, rather than waiting for it and all modifiers to be released. Paste events carry explicit modifier flags. Clipboard restoration runs separately, so the next shortcut is no longer blocked by the 800 ms restoration window. Holding the shortcut does not repeat the paste.
+
+For Word Online headings, try **Settings → Preserve the current text style → Type short text instead of pasting**. This optional mode delivers Unicode text as typing instead of invoking Word's paste handling. It leaves the clipboard untouched and gives the editor an opportunity to preserve its current style when replacing the whole heading. It is off by default.
+
+[Microsoft documents](https://learn.microsoft.com/en-us/office365/servicedescriptions/office-online-service-description/word-online) that Word for the web supports Paste Text Only but lacks Merge Formatting and Use Destination Styles. Typing mode is a workaround, not a guarantee: heading preservation still needs verification in Word Online. Selecting the paragraph separator as well as the heading can change the paragraph's style; select only the heading's visible text when possible.
+
+Typing mode handles short, single-line text (up to 2,000 UTF-16 units) in small Unicode batches. Tabs, newlines, control characters, very large grapheme clusters, and longer text fall back to standard paste. Editor autocorrection, input handling, and undo behavior may differ from pasting. Focus changes stop further typing, but previously inserted text remains.
+
 ## Behavior and limits
 
-- The shortcut fires on key release and waits for modifiers to lift. It cancels if focus changes before pasting. A second plain-text paste is ignored while one is in progress.
-- Clipboard restoration happens **800 ms after sending paste**. macOS provides no universal paste-completion callback. Apps that read the clipboard unusually late may see the restored formatting, and an ordinary paste within that short window sees the temporary plain text. A newer copy is never overwritten by restoration.
+- The shortcut fires once on key press and cancels if focus changes before delivery. Standard paste accepts another shortcut immediately after sending events; typing mode finishes its short batch sequence before accepting another.
+- Clipboard restoration happens **800 ms after the most recent standard paste**. macOS provides no universal paste-completion callback. Apps that read the clipboard unusually late may see the restored formatting, and an ordinary paste within that short window sees the temporary plain text. A newer copy is never overwritten by restoration.
 - Files, images, multiple-item copies, and known sensitive/transient clipboard markers are skipped by Option-Command-V; use normal paste for those. Unmarked secrets cannot be distinguished from ordinary text.
 - Rich text must include a plain-text representation. Embedded hyperlink targets are removed while their visible text remains.
 - Optional text transformations can change prose or code (such as `[a]`); all except tracking removal are off by default.
@@ -52,6 +64,10 @@ This is an independent implementation inspired by [Pure Paste](https://sindresor
 
 The standalone runner works with command-line tools alone. The same cases are also available through `swift test --disable-sandbox` when XCTest is installed with Xcode.
 
-The 12 checks cover text and URL transformations, keeping copied rich text intact, plain-text eligibility, clipboard restoration, protecting sensitive/image/file and multiple-item copies, and avoiding restoration over a newer copy. Tests use isolated named pasteboards, not your general clipboard.
+The 16 checks cover text and URL transformations, keeping copied rich text intact, plain-text eligibility, clipboard restoration, protecting sensitive/image/file and multiple-item copies, and avoiding restoration over a newer copy, Unicode typing batches and fallbacks, read-only typing preparation, and repeated cleanup retaining the original formatting. Tests use isolated named pasteboards, not your general clipboard.
 
 The automated suite does not prove paste delivery into every macOS app. After granting Accessibility, copy bold text in a rich-text editor: check that ⌘V retains bold, ⌥⌘V uses plain text, and a subsequent ⌘V (after one second) retains bold again.
+
+## Icon
+
+The app bundle includes a multi-resolution macOS icon built from [Assets/EasyPaste.png](Assets/EasyPaste.png). The [asset notes](Assets/README.md) record the built-in image-generation tool and original prompt. `scripts/build-icon.sh` produces the ICNS file during every build.

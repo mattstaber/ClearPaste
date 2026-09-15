@@ -8,6 +8,19 @@ import PasteCore
 #endif
 
 final class TextCleanerTests: XCTestCase {
+    func testTypingPlanPreservesUnicodeAndBounds() {
+        let text = "A heading 👩‍💻 café e\u{301} " + String(repeating: "a", count: 55)
+        let chunks = TypingPlan.chunks(for: text)!
+        XCTAssertEqual(chunks.map { String(decoding: $0, as: UTF16.self) }.joined(), text)
+        XCTAssertTrue(chunks.allSatisfy { !$0.isEmpty && $0.count <= 20 })
+    }
+    func testTypingPlanFallsBackForControlsAndLongText() {
+        for text in ["", "a\nb", "a\rb", "a\tb", "a\u{2028}b", "a\u{001B}b", String(repeating: "a", count: 2001)] {
+            XCTAssertNil(TypingPlan.chunks(for: text))
+        }
+        XCTAssertTrue(TypingPlan.chunks(for: String(repeating: "a", count: 2000)) != nil)
+        XCTAssertNil(TypingPlan.chunks(for: "a" + String(repeating: "\u{301}", count: 25)))
+    }
     func testTrackingRemovalPreservesQueryBytesAndFragment() {
         XCTAssertEqual(TextCleaner.cleanURL("https://example.com/p?q=a%20b&utm_source=test&token=a+b#section"), "https://example.com/p?q=a%20b&token=a+b#section")
         XCTAssertEqual(TextCleaner.cleanURL("https://example.com/?fbclid=123#top"), "https://example.com/#top")
@@ -35,6 +48,34 @@ final class TextCleanerTests: XCTestCase {
 }
 
 final class ClipboardTests: XCTestCase {
+    @MainActor
+    func testTypingPreparationKeepsClipboardIntact() {
+        let board = NSPasteboard.withUniqueName()
+        defer { board.releaseGlobally() }
+        let item = NSPasteboardItem()
+        item.setString("Heading", forType: .string)
+        item.setString("<h1>Heading</h1>", forType: .html)
+        board.writeObjects([item])
+        let controller = ClipboardController(pasteboard: board, startMonitoring: false)
+        let before = board.changeCount
+        XCTAssertEqual(controller.cleanedText(), "Heading")
+        XCTAssertEqual(board.changeCount, before)
+        XCTAssertEqual(board.string(forType: .html), "<h1>Heading</h1>")
+    }
+    @MainActor
+    func testRepeatedCleanupRetainsOriginalSnapshot() {
+        let board = NSPasteboard.withUniqueName()
+        defer { board.releaseGlobally() }
+        let item = NSPasteboardItem()
+        item.setString("Heading", forType: .string)
+        item.setString("<h1>Heading</h1>", forType: .html)
+        board.writeObjects([item])
+        let controller = ClipboardController(pasteboard: board, startMonitoring: false)
+        XCTAssertTrue(controller.cleanClipboard())
+        XCTAssertTrue(controller.cleanClipboard())
+        controller.undo()
+        XCTAssertEqual(board.string(forType: .html), "<h1>Heading</h1>")
+    }
     @MainActor
     func testCopyAndPollingNeverStripFormatting() {
         let board = NSPasteboard.withUniqueName()
@@ -110,6 +151,7 @@ final class ClipboardTests: XCTestCase {
             board.writeObjects([item])
             let controller = ClipboardController(pasteboard: board, startMonitoring: false)
             let before = board.changeCount
+            XCTAssertNil(controller.cleanedText())
             controller.cleanClipboard()
             XCTAssertEqual(board.changeCount, before, type)
             XCTAssertFalse(controller.canUndo)
