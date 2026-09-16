@@ -1,12 +1,13 @@
 import AppKit
 import Carbon
+import PasteCore
 
 /// Registers only Option-Command-V; ordinary copy and paste events are untouched.
 @MainActor
 final class PasteHotKey {
     private var hotKey: EventHotKeyRef?
     private var handler: EventHandlerRef?
-    private var isHeld = false
+    private var trigger = ShortcutTrigger()
     private let action: @MainActor () -> Void
     private(set) var error: String?
 
@@ -24,11 +25,7 @@ final class PasteHotKey {
             let object = Unmanaged<PasteHotKey>.fromOpaque(context).takeUnretainedValue()
             let pressed = GetEventKind(event) == UInt32(kEventHotKeyPressed)
             Task { @MainActor in
-                if pressed {
-                    guard !object.isHeld else { return }
-                    object.isHeld = true
-                    object.action()
-                } else { object.isHeld = false }
+                if object.trigger.receive(isPressed: pressed) { object.action() }
             }
             return noErr
         }, 2, &events, Unmanaged.passUnretained(self).toOpaque(), &handler)

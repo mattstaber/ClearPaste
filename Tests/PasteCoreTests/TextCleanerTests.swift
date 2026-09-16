@@ -8,6 +8,19 @@ import PasteCore
 #endif
 
 final class TextCleanerTests: XCTestCase {
+    func testShortcutWaitsForReleaseAndIgnoresRepeats() {
+        var trigger = ShortcutTrigger()
+        XCTAssertFalse(trigger.receive(isPressed: true))
+        XCTAssertFalse(trigger.receive(isPressed: true))
+        XCTAssertTrue(trigger.receive(isPressed: false))
+        XCTAssertFalse(trigger.receive(isPressed: false))
+        XCTAssertFalse(trigger.receive(isPressed: true))
+        XCTAssertTrue(trigger.receive(isPressed: false))
+    }
+    func testUnpairedReleaseDoesNotPaste() {
+        var trigger = ShortcutTrigger()
+        XCTAssertFalse(trigger.receive(isPressed: false))
+    }
     func testTypingPlanPreservesUnicodeAndBounds() {
         let text = "A heading 👩‍💻 café e\u{301} " + String(repeating: "a", count: 55)
         let chunks = TypingPlan.chunks(for: text)!

@@ -36,10 +36,16 @@ struct MenuPanel: View {
                 Text("Copy with ⌘C. Paste normally with ⌘V.")
                     .font(.caption).foregroundStyle(.secondary)
             }.frame(maxWidth: .infinity).padding(.vertical, 8)
-            Label(controller.shortcutError ?? controller.status,
+            Label(controller.shortcutError ?? (controller.accessibilityGranted ? controller.status : "Accessibility permission is required"),
                   systemImage: controller.shortcutError == nil ? "checkmark.circle" : "exclamationmark.triangle")
                 .font(.caption).foregroundStyle(controller.shortcutError == nil ? Color.secondary : Color.orange)
                 .fixedSize(horizontal: false, vertical: true)
+            if !controller.accessibilityGranted {
+                Button("Enable Accessibility…", systemImage: "hand.raised") { controller.requestAccessibility() }
+                    .buttonStyle(.glassProminent)
+                Text("After an update, you may need to remove ClearPaste from the Accessibility list and add this app again.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             GlassEffectContainer(spacing: 12) {
                 HStack(spacing: 12) {
                     Button("Settings…", systemImage: "slider.horizontal.3", action: openSettings)
@@ -146,7 +152,7 @@ struct SettingsView: View {
             }
             Section("Preserve the current text style") {
                 Toggle("Type short text instead of pasting", isOn: $typeToPreserveStyle)
-                Text("Try this when replacing an entire heading in Word Online. Short, single-line text is sent as typing. Longer text, tabs, and newlines use standard paste. Results depend on the editor.")
+                Text("Experimental: try this when replacing an entire heading in Word Online. If typing does not work in your editor, turn this off to use standard paste. Short, single-line text is sent as typing. Longer text, tabs, and newlines use standard paste. Results depend on the editor.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section("Startup") {
@@ -178,7 +184,7 @@ struct SettingsView: View {
             Image(nsImage: NSApplication.shared.applicationIconImage).resizable().frame(width: 128, height: 128)
             Text("ClearPaste").font(.largeTitle.bold())
             Text("Plain text, on command.").font(.title3).foregroundStyle(.secondary)
-            Text("Version 2.0.0").font(.caption).foregroundStyle(.secondary)
+            Text("Version 2.0.1").font(.caption).foregroundStyle(.secondary)
             Text("Built for Mac with Liquid Glass.\nAn independent utility inspired by Pure Paste.")
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
         }.frame(maxWidth: .infinity, maxHeight: .infinity).padding(24)

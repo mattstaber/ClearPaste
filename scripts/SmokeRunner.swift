@@ -12,6 +12,8 @@ func XCTAssertFalse(_ value: Bool, file: StaticString = #file, line: UInt = #lin
 struct SmokeRunner {
     @MainActor static func main() throws {
         let text = TextCleanerTests()
+        text.testShortcutWaitsForReleaseAndIgnoresRepeats()
+        text.testUnpairedReleaseDoesNotPaste()
         text.testTypingPlanPreservesUnicodeAndBounds()
         text.testTypingPlanFallsBackForControlsAndLongText()
         text.testTrackingRemovalPreservesQueryBytesAndFragment()
@@ -19,7 +21,7 @@ struct SmokeRunner {
         text.testOptionalCleanupPreservesEmojiJoiners()
         text.testDefaultsPreserveOrdinaryText()
         text.testEncodedTrackingName()
-        print("PASS: 7 text cleanup and typing tests")
+        print("PASS: 9 text, typing, and shortcut tests")
         let clipboard = ClipboardTests()
         clipboard.testTypingPreparationKeepsClipboardIntact()
         clipboard.testRepeatedCleanupRetainsOriginalSnapshot()

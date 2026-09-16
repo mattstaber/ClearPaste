@@ -14,6 +14,7 @@ final class ClipboardController: ObservableObject {
     private var timer: Timer?
     private var restoreTask: Task<Void, Never>?
     private var hotKey: PasteHotKey?
+    @Published var accessibilityGranted = AXIsProcessTrusted()
     @Published var shortcutError: String?
     @Published var isPasting = false
     private var undoItems: [[NSPasteboard.PasteboardType: Data]]?
@@ -46,6 +47,7 @@ final class ClipboardController: ObservableObject {
     }
 
     func poll() {
+        accessibilityGranted = AXIsProcessTrusted()
         guard pasteboard.changeCount != lastChange else { return }
         lastChange = pasteboard.changeCount
         undoItems = nil
@@ -56,11 +58,16 @@ final class ClipboardController: ObservableObject {
     func requestAccessibility() {
         let key = kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String
         _ = AXIsProcessTrustedWithOptions([key: true] as CFDictionary)
+        accessibilityGranted = AXIsProcessTrusted()
+        if !accessibilityGranted, let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+            NSWorkspace.shared.open(url)
+        }
     }
 
     func pastePlainText() {
         guard !isPasting else { return }
-        guard AXIsProcessTrusted() else {
+        accessibilityGranted = AXIsProcessTrusted()
+        guard accessibilityGranted else {
             status = "Enable Accessibility in Settings to use ⌥⌘V"
             return
         }
@@ -69,6 +76,20 @@ final class ClipboardController: ObservableObject {
         isPasting = true
         Task { @MainActor in
             defer { isPasting = false }
+            // Browsers can observe physical modifier state despite synthetic flags.
+            // Never send either paste or Unicode input while the shortcut is held.
+            let modifiers: CGEventFlags = [.maskCommand, .maskAlternate, .maskControl, .maskShift]
+            status = "Release the shortcut keys to paste"
+            for _ in 0..<300 {
+                if CGEventSource.flagsState(.combinedSessionState).intersection(modifiers).isEmpty { break }
+                guard NSWorkspace.shared.frontmostApplication?.processIdentifier == target.processIdentifier else {
+                    status = "Paste cancelled because focus changed"; return
+                }
+                try? await Task.sleep(nanoseconds: 10_000_000)
+            }
+            guard CGEventSource.flagsState(.combinedSessionState).intersection(modifiers).isEmpty else {
+                status = "Paste cancelled: release all shortcut keys and try again"; return
+            }
             guard NSWorkspace.shared.frontmostApplication?.processIdentifier == target.processIdentifier else {
                 status = "Paste cancelled because focus changed"
                 return
