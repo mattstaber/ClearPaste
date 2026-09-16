@@ -21,26 +21,48 @@
           "fill-specializations" : [
             {
               "value" : {
-                "solid" : "srgb:0.21569,0.43529,0.87059,1.00000"
+                "linear-gradient" : [
+                  "srgb:0.00000,0.87059,0.87059,1.00000",
+                  "srgb:0.21569,0.43529,0.87059,1.00000"
+                ]
               }
             },
             {
               "appearance" : "dark",
               "value" : {
-                "solid" : "extended-gray:1.00000,1.00000"
+                "linear-gradient" : [
+                  "extended-gray:1.00000,1.00000",
+                  "extended-gray:1.00000,1.00000"
+                ],
+                "orientation" : {
+                  "start" : {
+                    "x" : 0.5,
+                    "y" : 1
+                  },
+                  "stop" : {
+                    "x" : 0.5,
+                    "y" : 0
+                  }
+                }
               }
             },
             {
               "appearance" : "tinted",
-              "value" : {
-                "solid" : "extended-gray:1.00000,1.00000"
-              }
+              "value" : "system-dark"
             }
           ],
           "glass" : true,
           "image-name" : "sparkle.svg",
           "name" : "Sparkle",
-          "opacity" : 0.9
+          "opacity-specializations" : [
+            {
+              "value" : 1
+            },
+            {
+              "appearance" : "dark",
+              "value" : 1
+            }
+          ]
         }
       ],
       "lighting" : "individual",
@@ -60,26 +82,52 @@
           "fill-specializations" : [
             {
               "value" : {
-                "solid" : "srgb:0.21569,0.43529,0.87059,1.00000"
+                "linear-gradient" : [
+                  "srgb:0.00000,0.87059,0.87059,1.00000",
+                  "srgb:0.21569,0.43529,0.87059,1.00000"
+                ]
               }
             },
             {
               "appearance" : "dark",
               "value" : {
-                "solid" : "extended-gray:1.00000,1.00000"
+                "linear-gradient" : [
+                  "extended-gray:1.00000,1.00000",
+                  "gray:0.74963,1.00000"
+                ],
+                "orientation" : {
+                  "start" : {
+                    "x" : 0.5,
+                    "y" : 1
+                  },
+                  "stop" : {
+                    "x" : 0.5,
+                    "y" : 0
+                  }
+                }
               }
             },
             {
               "appearance" : "tinted",
-              "value" : {
-                "solid" : "extended-gray:1.00000,1.00000"
-              }
+              "value" : "system-dark"
             }
           ],
           "glass" : true,
           "image-name" : "text.svg",
           "name" : "Text",
-          "opacity" : 0.9
+          "opacity-specializations" : [
+            {
+              "value" : 1
+            },
+            {
+              "appearance" : "dark",
+              "value" : 1
+            },
+            {
+              "appearance" : "tinted",
+              "value" : 0.9
+            }
+          ]
         }
       ],
       "lighting" : "individual",
@@ -97,21 +145,36 @@
         {
           "fill-specializations" : [
             {
-              "value" : {
-                "solid" : "extended-gray:1.00000,1.00000"
-              }
+              "value" : "system-light"
             },
             {
               "appearance" : "dark",
               "value" : {
-                "solid" : "display-p3:0.00000,0.87059,0.87059,1.00000"
+                "solid" : "display-p3:0.21569,0.43529,0.87059,1.00000"
               }
+            },
+            {
+              "appearance" : "tinted",
+              "value" : "system-light"
             }
           ],
           "glass" : true,
+          "hidden" : false,
           "image-name" : "clip.svg",
           "name" : "Clip",
-          "opacity" : 0.9
+          "opacity-specializations" : [
+            {
+              "value" : 1
+            },
+            {
+              "appearance" : "dark",
+              "value" : 1
+            },
+            {
+              "appearance" : "tinted",
+              "value" : 1
+            }
+          ]
         }
       ],
       "lighting" : "individual",
@@ -129,9 +192,7 @@
         {
           "fill-specializations" : [
             {
-              "value" : {
-                "solid" : "extended-gray:1.00000,1.00000"
-              }
+              "value" : "system-light"
             },
             {
               "appearance" : "dark",
@@ -139,14 +200,36 @@
                 "linear-gradient" : [
                   "display-p3:0.00000,0.87059,0.87059,1.00000",
                   "srgb:0.21569,0.43529,0.87059,1.00000"
-                ]
+                ],
+                "orientation" : {
+                  "start" : {
+                    "x" : 0.5,
+                    "y" : 1
+                  },
+                  "stop" : {
+                    "x" : 0.5,
+                    "y" : 0
+                  }
+                }
               }
+            },
+            {
+              "appearance" : "tinted",
+              "value" : "system-light"
             }
           ],
           "glass" : true,
           "image-name" : "clipboard.svg",
           "name" : "Clipboard",
-          "opacity" : 0.9
+          "opacity-specializations" : [
+            {
+              "value" : 1
+            },
+            {
+              "appearance" : "tinted",
+              "value" : 1
+            }
+          ]
         }
       ],
       "lighting" : "individual",
